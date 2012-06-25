@@ -1,3 +1,10 @@
+###
+$("*").mouseover(function(e){$(this).css('outline', '4px solid red');e.stopPropagation()})
+$("*").mouseout(function(e){$(this).css('outline', '0px');})
+$("*").click(function(e){e.preventDefault(); console.log($(this).css('color')); return false;})
+###
+
+
 window.jsCU = {}
 jsCU.wrong_color = "rgb(248, 74, 6)"
 jsCU.right_color = "rgb(0, 128, 0)"
