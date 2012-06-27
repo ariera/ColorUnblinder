@@ -56,24 +56,118 @@ class ColorPicker
       setTimeout tryAgain ,100
 
   addPlaceholder: ->
-    div = $("<div id='colorpicker'></div>")
-    div.css({position:'absolute', top:'50px', right: '50px'})
+    div = $("<div><div id='colorpicker'></div><input type='submit' value='done' class='x_done'></div>")
+    div.css({position:'fixed', top:'50px', right: '50px'})
     $("body").append(div)
+    div.find('.x_done').click ->
+      $("body").trigger("ColorUblinder:doneChanging")
 
   addJS: ->
     jsCU.addJavascript('../vendor/farbtastic/farbtastic.js',  'body')
 
   addCSS: ->
     jsCU.addStylesheet('../vendor/farbtastic/farbtastic.css', 'body')
+  destroy: ->
+    $("#colorpicker").parent().remove()
 
 
+class Pointer
+  constructor: ->
+    @pointerPanel = new PointerPanel()
+    $("*").mouseover @colorOutline
+    $("*").mouseout @removeOutline
+    _choseColor = (e) => @choseColor(e)
+    $("*").click _choseColor
+    $("body").bind('ColorUnblinder:destroyPointer', ->
+      $("*").unbind('click', _choseColor)
+    )
+  colorOutline: (e)->
+    $(this).css('outline', '4px solid red')
+    e.stopPropagation()
+  removeOutline: (e)->
+    $(this).css('outline', '0px')
+  choseColor: (e)->
+      if $(e.target).hasClass('x_choose')
+        $("body").trigger('ColorUnblinder:colorChosen', @pointerPanel.color())
+        return false
+      e.preventDefault()
+      color = $(e.target).css('color')
+      console.log(color)
+      @pointerPanel.setColor(color)
+      false
+  destroy: ->
+    @pointerPanel.destroy()
+    $("*").unbind('mouseover', @colorOutline)
+    $("*").unbind('mouseout',  @removeOutline)
+    $("body").trigger('ColorUnblinder:destroyPointer')
+    @pointerPanel = null
 
+  
+
+class ControlPanel
+  constructor: (@content)->
+    $("body").append(@css)
+    @className = "CU_control_panel"
+  template: ->
+    """
+    <div class="#{@className}"></div>
+    """
+  css: ->
+    """
+    <style rel='stylesheet' type='text/css'>
+    .CU_control_panel{position:fixed; top:50px; right:50px; width:100px; height:100px; background-color:rgba(0,0,0,0.3)}
+    .CU_control_panel .colorwell {width:90px}
+    </style>
+    """
+  render: ->
+    $html = $(@template()).html @content.$el
+    $("body .#{@className}").remove()
+    $("body").append($html)
+  destroy: ->
+    $("body .#{@className}").remove()
+
+class PointerPanel
+  constructor: ->
+    @controlPanel = new ControlPanel(@)
+    @hexColor= '#000'
+    @render()
+  el: "<div></div>"
+  color: -> Color(@hexColor)
+  setColor: (color) ->
+    @hexColor = Color(color).hexString()
+    @render()
+  template: ->
+    """
+    <input type="text" value="#{@hexColor}" class="colorwell"
+           style="background-color:#{@hexColor}; color:#FFF">
+    <input type="submit" value="choose" class="x_choose">
+    """
+  render: ->
+    @$el = $(@el).html @template()
+    @controlPanel.render()
+  destroy: ->
+    @$el.remove()
+    @controlPanel.destroy()
+    
 
 class ColorUnblinder
   constructor: ->
     @addColorLibrary()
+    @startChoser()
+    $("body").bind "ColorUblinder:doneChanging", =>
+      @startChoser()
+      @picker.destroy()
+      @swapper = null
+    
+    $("body").bind 'ColorUnblinder:colorChosen', (e, color)=>
+      @startChanger(color)
+      @pointer.destroy()
+    
+  startChoser: ->
+    @pointer = new Pointer()
+  startChanger: (color)->
     @picker = new ColorPicker()
-    @swapper = new ColorSwapper(jsCU.wrong_color)
+    @swapper = new ColorSwapper(color.rgbString())
     @picker.start (color)=> @changer(color)
   
   changer: (color)->
@@ -82,5 +176,7 @@ class ColorUnblinder
   addColorLibrary: ->
     jsCU.addJavascript('../vendor/color-0.4.1.js', 'body')
 
-
+window.Pointer = Pointer
+window.ControlPanel = ControlPanel
+window.PointerPanel = PointerPanel
 window.CU = ColorUnblinder
