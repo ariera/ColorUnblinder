@@ -42,8 +42,8 @@ class ColorSwapper
 class ColorPicker
   constructor: ->
     @addPlaceholder()
-    @addJS()
-    @addCSS()
+    #@addJS()
+    #@addCSS()
 
   start: (callback)->
     @_startWhenReady(callback)
@@ -152,7 +152,7 @@ class PointerPanel
 
 class ColorUnblinder
   constructor: ->
-    @addColorLibrary()
+    #@addColorLibrary()
     @startChoser()
     $("body").bind "ColorUblinder:doneChanging", =>
       @startChoser()
@@ -180,3 +180,5 @@ window.Pointer = Pointer
 window.ControlPanel = ControlPanel
 window.PointerPanel = PointerPanel
 window.CU = ColorUnblinder
+console.log("parece que ta todo cargadico")
+new CU()

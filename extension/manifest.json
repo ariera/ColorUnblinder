@@ -1,0 +1,15 @@
+{
+  "name": "ColorUnblinder",
+  "version": "0.1",
+  "manifest_version": 2,
+  "description": "ColorUnblinder helps color blind people to easily change the conflictive colors on the web to the ones he prefers",
+  "browser_action": {
+    "default_icon": "images/icon.png"
+  },
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "permissions": ["tabs", "http://*/*", "https://*/*"],
+  "web_accessible_resources": ["images/marker.png", "images/mask.png", "images/wheel.png"]
+}
+
